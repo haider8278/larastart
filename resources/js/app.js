@@ -5,26 +5,57 @@
  */
 
 require('./bootstrap');
-require('./components/Dashboard.vue');
 window.Vue = require('vue');
-import VueRouter from 'vue-router'
 
-Vue.use(VueRouter)
+import { Form, HasError, AlertError } from 'vform';
+window.Form = Form;
+Vue.component(HasError.name, HasError);
+Vue.component(AlertError.name, AlertError);
+Vue.component('pagination', require('laravel-vue-pagination'));
 
+import VueRouter from 'vue-router';
+Vue.use(VueRouter);
 
+import moment from 'moment';
+import Gate from './Gate';
+Vue.prototype.$gate = new Gate(window.user);
+import VueProgressBar from 'vue-progressbar';
+import Swal from 'sweetalert2';
+window.Swal = Swal;
 
-let routes = [
-    { path: '/dashboard', component: require('./components/Dashboard.vue').default },
-    { path: '/profile', component: require('./components/Profile.vue').default }
-  ]
+Vue.filter('capitalize', function (value) {
+    if (!value) return ''
+    value = value.toString()
+    return value.charAt(0).toUpperCase() + value.slice(1)
+});
+Vue.filter('date', function (value) {
+    return moment(value).format("MMM Do YYYY");
+});
 
-// 3. Create the router instance and pass the `routes` option
-// You can pass in additional options here, but let's
-// keep it simple for now.
-const router = new VueRouter({
-    routes // short for `routes: routes`
-  })
+const options = {
+    color: '#38c172',
+    failedColor: '#e3342f',
+    thickness: '5px',
+    transition: {
+        speed: '0.6s',
+        opacity: '0.6s',
+        termination: 300
+    },
+    autoRevert: true,
+    location: 'top',
+    inverse: false
+}
+Vue.use(VueProgressBar, options);
 
+const toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+  });
+window.toast = toast;
+
+window.Fire = new Vue();
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -36,6 +67,28 @@ const router = new VueRouter({
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
+Vue.component(
+    'passport-clients',
+    require('./components/passport/Clients.vue').default
+);
+
+Vue.component(
+    'passport-authorized-clients',
+    require('./components/passport/AuthorizedClients.vue').default
+);
+
+Vue.component(
+    'passport-personal-access-tokens',
+    require('./components/passport/PersonalAccessTokens.vue').default
+);
+
+Vue.component(
+    'not-found',
+    require('./components/404.vue').default
+);
+
+
+
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 
 /**
@@ -44,7 +97,22 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+require('./routes');
+let routes = window.routes;
+let router = new VueRouter({
+    mode:'history',
+    routes // short for `routes: routes`
+});
+
 const app = new Vue({
     el: '#app',
-    router
+    router,
+    data:{
+        search:''
+    },
+    methods:{
+        searchit(){
+            Fire.$emit('searching',this.search)
+        }
+    }
 });

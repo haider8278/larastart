@@ -12,3 +12,9 @@ $fa-font-path: "../webfonts";
 @import "~@fortawesome/fontawesome-free/scss/fontawesome.scss";
 @import "~@fortawesome/fontawesome-free/scss/solid.scss";
 @import "~@fortawesome/fontawesome-free/scss/brands.scss";
+
+
+.router-link-exact-active,.nav-sidebar > .nav-item:hover > .nav-link,.nav-sidebar > .nav-item:focus > .nav-link{
+    background-color:$indigo !important;
+    color: #fff !important;
+}
